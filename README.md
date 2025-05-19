@@ -42,3 +42,58 @@ Saniteze thread é uma opção do compilador que ativa a verificação de concor
 gcc -Wall -Wextra -Werror -pthread -fsanitize=thread -g -o philo philo.c
 ./philo 5 800 400 400
 ```
+
+
+</br> </br> </br>
+
+### Threads, Mutex, Race conditions, deadlocks, starvation, sincronização
+_Conceitos com exemplos do projeto Philosoph_
+
+**- Threads**
+Threads são unidades de execução dentro de um processo que compartilham o mesmo espaço de memória.</br>
+Exemplo:
+Cada filósofo é implementado como uma thread independente, que executa seu próprio ciclo de ações (pensar, pegar garfos, comer, dormir). Todas essas threads compartilham os mesmos recursos (ex: array de garfos/mutexes), o que exige coordenação cuidadosa para evitar erros.
+
+**- Mutex (Mutual Exclusion)**
+Um mutex é um mecanismo de sincronização que garante que apenas uma thread acesse um recurso compartilhado por vez, prevenindo race conditions.</br>
+Exemplo:
+Cada garfo é protegido por um mutex. Quando um filósofo tenta comer, ele precisa bloquear os dois mutexes correspondentes aos garfos à sua esquerda e à sua direita. Isso evita que outro filósofo use os mesmos garfos ao mesmo tempo, garantindo o acesso exclusivo e seguro.
+
+
+**- Race condition**
+Ocorre quando o resultado do programa depende da ordem de execução das threads acessando recursos compartilhados sem sincronização adequada.</br>
+Exemplo:
+Dois filósofos tentam escrever no terminal ao mesmo tempo:
+```c
+printf("Filósofo 2 está comendo\n");
+printf("Filósofo 3 está pensando\n");
+```
+
+
+**- Deadlock**
+Situação em que dois ou mais filósofos esperam indefinidamente por recursos (garfos) bloqueados uns pelos outros.</br>
+Exemplo:
+Todos os filósofos pegam o garfo da esquerda e ficam esperando o da direita. Nenhum libera o recurso:
+```c
+pthread_mutex_lock(&garfo_esquerda);
+// esperando eternamente pelo garfo_direita...
+```
+
+
+**- Starvation**
+Ocorre quando uma thread não consegue acessar um recurso compartilhado por um período prolongado, geralmente devido a outras threads monopolizando o recurso, resultando em espera infinita.</br>
+Exemplo:
+O filósofo 4 nunca obtém os dois garfos porque os filósofos 3 e 5 sempre comem antes dele, gerando fome infinita.
+
+
+
+**- Sincronização**
+A sincronização é o processo de coordenar o acesso a recursos compartilhados entre threads para evitar condições de corrida, deadlocks e starvation. Isso pode ser feito usando mutexes, semáforos ou outras estruturas de controle de concorrência.
+Exemplo:
+```c
+pthread_mutex_lock(&fork[i]);
+pthread_mutex_lock(&fork[(i + 1) % n]);
+// seção crítica: filósofo come
+pthread_mutex_unlock(&fork[i]);
+pthread_mutex_unlock(&fork[(i + 1) % n]);
+```
